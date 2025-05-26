@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <title>單字學習遊戲</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; max-width: 600px; margin: auto; }
+    button { margin-top: 1em; width: 100%; padding: 0.5em; }
+    .correct { color: green; }
+    .wrong { color: red; }
+  </style>
+</head>
+<body>
+  <div style="text-align:right;">
+    <form action="/logout" method="get">
+      <button type="submit">🚪 登出</button>
+    </form>
+  </div>
+  
+  <h1>英文單字小遊戲</h1>
+  <div id="question">載入中...</div>
+  <div id="choices"></div>
+  <p id="result"></p>
+
+  <script>
+    let answer = "";
+  
+    function loadQuestion() {
+      fetch("/api/question")
+      .then(res => res.json())
+        .then(data => {
+          answer = data.answer;
+          document.getElementById("question").textContent = "單字：" + data.word;
+          const choicesDiv = document.getElementById("choices");
+          choicesDiv.innerHTML = "";
+          document.getElementById("result").textContent = "";
+  
+          data.choices.forEach(choice => {
+            const btn = document.createElement("button");
+            btn.textContent = choice;
+            btn.onclick = () => {
+              // ❗按下後鎖定所有選項按鈕
+              document.querySelectorAll("#choices button").forEach(b => b.disabled = true);
+  
+              document.getElementById("result").innerHTML = 
+                (choice === answer)
+                  ? "<span class='correct'>✔️ 正確</span>"
+                  : "<span class='wrong'>❌ 錯誤，答案是：" + answer + "</span>";
+  
+              setTimeout(loadQuestion, 1500);
+            };
+            choicesDiv.appendChild(btn);
+          });
+        });
+    }
+  
+    loadQuestion();
+  </script>
+</body>
+</html>

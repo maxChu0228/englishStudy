@@ -1,0 +1,12 @@
+# 不要推虛擬環境資料夾
+venv/
+
+# 不要推 sqlite 資料庫（除非你就是想推範例資料）
+vocab.db
+
+# 編譯暫存
+__pycache__/
+*.pyc
+
+# VSCode 設定
+.vscode/

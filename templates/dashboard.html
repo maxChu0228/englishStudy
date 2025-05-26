@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>使用者主頁 - VocaPlay</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      text-align: center;
+      padding: 60px;
+      background: #f0f4ff;
+    }
+    h2 {
+      font-size: 2em;
+    }
+    p {
+      font-size: 1.1em;
+      color: #555;
+    }
+    .button-group {
+      margin-top: 40px;
+    }
+    .button-group a {
+      display: inline-block;
+      margin: 10px;
+      padding: 15px 30px;
+      font-size: 1em;
+      background-color: #4f6dff;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background-color 0.2s;
+    }
+    .button-group a:hover {
+      background-color: #3a56cc;
+    }
+    .logout {
+      background-color: #ff4d4d;
+    }
+    .logout:hover {
+      background-color: #d93636;
+    }
+  </style>
+</head>
+<body>
+  <h2>👋 Hi, {{ user }}</h2>
+  <p>歡迎回來 VocaPlay！你目前的身份是 <b>{{ role }}</b></p>
+
+  <div class="button-group">
+    <a href="/game">▶️ 開始單字遊戲</a>
+    <a href="/logout" class="logout">🚪 登出</a>
+  </div>
+</body>
+</html>

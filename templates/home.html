@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>VocaPlay - 單字挑戰遊戲</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      text-align: center;
+      padding: 50px;
+      background: linear-gradient(to right, #f8f8ff, #eef4ff);
+    }
+    .logo {
+      width: 100px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: 1.2em;
+      color: #333;
+      margin-bottom: 40px;
+    }
+    .login-btn {
+      padding: 12px 30px;
+      font-size: 1em;
+      background-color: #4f6dff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .login-btn:hover {
+      background-color: #3d56cc;
+    }
+  </style>
+</head>
+<body>
+  <img src="{{ url_for('static', filename='logo.png') }}" alt="VocaPlay Logo" class="logo">
+  <h1>歡迎來到 VocaPlay</h1>
+  <p>一個專為英文單字學習打造的趣味挑戰平台。<br>快來登入開始挑戰你的詞彙力吧！</p>
+  <a href="/login"><button class="login-btn">登入開始遊戲 ➜</button></a>
+</body>
+</html>

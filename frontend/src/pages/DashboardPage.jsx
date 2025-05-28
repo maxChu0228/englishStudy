@@ -5,8 +5,6 @@ import Navbar from "../components/Navbar";
 import api from "../api";
 import UserProfileCard from "../components/UserProfileCard";
 import LevelCard from "../components/LevelCard";
-import CheckInCard from "../components/CheckInCard";
-import DailyCorrectChart from "../components/DailyCorrectChart";
 import LearningStatsCard from "../components/LearningStatsCard";
 
 function DashboardPage() {

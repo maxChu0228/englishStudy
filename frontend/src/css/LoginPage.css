@@ -1,0 +1,56 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden; /* ✅ 禁止出現滾動條 */
+}
+
+.letter-background {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  pointer-events: none;
+}
+
+.letter-scroll {
+  display: inline-block;
+  white-space: nowrap;
+  animation: scrollLoopAlt 100s linear infinite;
+}
+
+
+.letter-row {
+  font-size: 200px;
+  font-weight: bold;
+  font-family: 'Courier New', Courier, monospace;
+  color: rgba(0, 0, 0, 0.05);
+  letter-spacing: 100px;
+  display: inline-block;
+}
+
+/* 注意這邊不再 translateX，而是用 margin shift */
+@keyframes scrollLoopAlt {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+
+@keyframes moveRight {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, session, jsonify
+from flask import Flask, request, redirect, session, jsonify, make_response
 import os
 from werkzeug.utils import secure_filename
 import sqlite3
@@ -35,7 +35,9 @@ def login():
 @app.route("/logout", methods=["POST"])
 def logout():
     session.clear()
-    return jsonify({"message": "已登出"})
+    response = make_response(jsonify({"message": "已登出"}))
+    response.set_cookie("session", "", expires=0)  # 清除 cookie 名稱依你設定為主
+    return response
 
 # 🔹 使用者資訊 API
 @app.route("/api/user")

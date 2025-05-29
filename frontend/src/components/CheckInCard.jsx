@@ -1,72 +1,76 @@
-import { useState, useEffect } from "react";
 import Calendar from "react-calendar";
 import 'react-calendar/dist/Calendar.css';
 import './calendar-custom.css';
 
-function CheckInCard({ checkIns = [], setCheckIns = () => {} }) {
+function CheckInCard({ checkIns = [], tasks = {} }) {
   const today = new Date().toISOString().split("T")[0];
-  const [hasCheckedIn, setHasCheckedIn] = useState(checkIns.includes(today));
-  const [showCalendar, setShowCalendar] = useState(false);
-  const [streak, setStreak] = useState(0);
-
-  useEffect(() => {
-    calculateStreak();
-  }, [checkIns]);
-
-  const calculateStreak = () => {
-    let count = 0;
-    let d = new Date(today);
-    while (checkIns.includes(d.toISOString().split("T")[0])) {
-      count++;
-      d.setDate(d.getDate() - 1);
-    }
-    setStreak(count);
+  const todayTasks = tasks[today] || {
+    advancedQuiz: false,
+    accuracyOver70: false
   };
 
-  const handleCheckIn = () => {
-    if (hasCheckedIn) return;
-    const newList = [...checkIns, today];
-    setCheckIns(newList);
-    setHasCheckedIn(true);
-  };
+const tileClassName = ({ date }) => {
+  const dateStr = date.toISOString().split("T")[0];
+  const dayTasks = tasks[dateStr] || {};
 
-  const tileClassName = ({ date }) => {
-    const dateStr = date.toISOString().split("T")[0];
-    return checkIns.includes(dateStr) ? "highlight" : null;
-  };
+  // ✅ 確保只有「所有任務都完成」才標記
+  const allDone = Object.values(dayTasks).length > 0 && Object.values(dayTasks).every(v => v === true);
+
+  return allDone ? "calendar-complete" : null;
+};
+
+
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-base font-semibold text-pink-600">📅 每日打卡</h3>
-        <button
-          onClick={() => setShowCalendar(!showCalendar)}
-          className="text-xs text-blue-500 underline"
-        >
-          {showCalendar ? "隱藏日曆" : "顯示日曆"}
-        </button>
+    <div className="w-full flex flex-col md:flex-row gap-6 bg-white p-4 rounded-xl ">
+      {/* 📅 日曆 */}
+      <div className="md:w-1/2 flex justify-center items-center">
+        <Calendar
+          tileClassName={tileClassName}
+          locale="en-US"
+          formatShortWeekday={(locale, date) =>
+            date.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 3)
+          }
+          formatMonthYear={(locale, date) =>
+            date.toLocaleDateString("en-US", { month: "long" })
+          }
+          showNeighboringMonth={false}
+          className="rounded-xl border-0 shadow-inner"
+        />
       </div>
 
-      <button
-        onClick={handleCheckIn}
-        disabled={hasCheckedIn}
-        className={`mb-2 px-4 py-1 text-sm text-white rounded ${
-          hasCheckedIn ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"
-        }`}
-      >
-        {hasCheckedIn ? "今天已打卡 ✔" : "點我打卡"}
-      </button>
-
-      <p className="text-sm">✅ 連續打卡：{streak} 天</p>
-      <p className="text-sm">📊 總打卡次數：{checkIns.length} 天</p>
-
-      {showCalendar && (
-        <div className="mt-3">
-          <Calendar tileClassName={tileClassName} locale="zh-TW" />
+      {/* 🎯 任務 */}
+      <div className="md:w-1/2">
+        <h2 className="text-lg font-semibold text-pink-600 mb-4">🎯 今日任務</h2>
+        <div className="space-y-4">
+          <TaskItem label="完成 3 次進階測驗" done={todayTasks.advancedQuiz} />
+          <TaskItem label="答對率 ≥ 70%" done={todayTasks.accuracyOver70} />
         </div>
-      )}
+      </div>
     </div>
   );
 }
+
+function TaskItem({ label, progress }) {
+  const percent = Math.min(Math.max(progress, 0), 100);
+
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between items-center px-1">
+        <span className="text-base font-medium text-gray-700">{label}</span>
+        <span className={`text-sm font-semibold ${percent >= 100 ? "text-green-600" : "text-gray-400"}`}>
+          {percent}%
+        </span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-3">
+        <div
+          className="h-3 bg-blue-500 rounded-full transition-all duration-500"
+          style={{ width: `${percent}%` }}
+        ></div>
+      </div>
+    </div>
+  );
+}
+
 
 export default CheckInCard;

@@ -20,13 +20,14 @@ def login():
 
     conn = sqlite3.connect("vocab.db")
     c = conn.cursor()
-    c.execute("SELECT username, role FROM users WHERE username=? AND password=?", (username, password))
+    c.execute("SELECT id, username, role FROM users WHERE username=? AND password=?", (username, password))
     user = c.fetchone()
     conn.close()
 
     if user:
-        session["user"] = user[0]
-        session["role"] = user[1]
+        session["user_id"] = user[0] 
+        session["user"] = user[1]
+        session["role"] = user[2]
         return jsonify({"message": "登入成功"})
     else:
         return jsonify({"error": "帳號或密碼錯誤"}), 401
@@ -65,29 +66,164 @@ def check_session():
     else:
         return jsonify({"loggedIn": False})
 
-# 🔹 題目 API（需登入）
-@app.route("/api/question")
-def get_question():
-    if "user" not in session:
-        return jsonify({"error": "未登入"}), 401
 
+def get_db_connection():
     conn = sqlite3.connect("vocab.db")
-    c = conn.cursor()
-    c.execute("SELECT word, correct, wrong1, wrong2, wrong3 FROM words ORDER BY RANDOM() LIMIT 1")
-    row = c.fetchone()
+    conn.row_factory = sqlite3.Row
+    return conn
+
+# 🔹 題目 API（需登入）
+@app.route("/api/quiz", methods=["GET"])
+def get_quiz_questions():
+    level = request.args.get("level", "easy")
+    count = int(request.args.get("count", 1))
+
+    conn = get_db_connection()
+    words = conn.execute("SELECT * FROM words WHERE level=?", (level,)).fetchall()
     conn.close()
 
-    if row:
-        word, correct, *wrongs = row
-        choices = wrongs + [correct]
-        random.shuffle(choices)
-        return jsonify({
-            "word": word,
-            "choices": choices,
-            "answer": correct
+    if len(words) < count:
+        return jsonify({"error": f"{level} 題庫不足，至少需要 {count} 筆單字"}), 400
+
+    # 將資料轉為 list of dict（sqlite3.Row 轉換）
+    all_words = [dict(w) for w in words]
+    random.shuffle(all_words)
+
+    questions = []
+
+    used_ids = set()
+
+    for word in all_words:
+        if word["id"] in used_ids:
+            continue
+
+        correct = word
+        used_ids.add(correct["id"])
+
+        # 準備選項池
+        wrong_pool = [
+            w["meaning"] for w in all_words
+            if w["id"] != correct["id"]
+            and w["meaning"] is not None
+            and w["meaning"].strip() != ""
+            and w["meaning"].strip() != correct["meaning"].strip()
+        ]
+
+        if len(wrong_pool) < 3:
+            continue  # 無法組成有效選項就略過
+
+        options = random.sample(wrong_pool, 3) + [correct["meaning"]]
+        random.shuffle(options)
+
+        questions.append({
+            "word": correct["word"],
+            "choices": options,
+            "answer": correct["meaning"]
         })
-    else:
-        return jsonify({"error": "無資料"})
+
+        if len(questions) == count:
+            break
+
+    if len(questions) < count:
+        return jsonify({"error": f"無法生成足夠的有效題目"}), 400
+
+    return jsonify(questions)
+
+#新增測驗紀錄
+@app.route("/api/quiz/submit", methods=["POST"])
+def submit_quiz_result():
+    if "user_id" not in session:
+        return jsonify({"error": "未登入"}), 401
+
+    data = request.get_json()
+    level = data.get("level")
+    score = data.get("score")
+    total = data.get("total")
+    answers = data.get("answers", [])
+
+    if not (level and isinstance(score, int) and isinstance(total, int) and isinstance(answers, list)):
+        return jsonify({"error": "資料格式錯誤"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # 插入 quiz_records
+    cursor.execute("""
+        INSERT INTO quiz_records (user_id, level, score, total_questions)
+        VALUES (?, ?, ?, ?)
+    """, (session["user_id"], level, score, total))
+    record_id = cursor.lastrowid
+
+    # 插入 quiz_items
+    for ans in answers:
+        word = ans.get("word")
+        correct = ans.get("correct")
+        chosen = ans.get("chosen")
+        is_correct = int(correct == chosen)
+
+        if word and correct and chosen:
+            cursor.execute("""
+                INSERT INTO quiz_items (record_id, word, correct_answer, chosen_answer, is_correct)
+                VALUES (?, ?, ?, ?, ?)
+            """, (record_id, word, correct, chosen, is_correct))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "紀錄已儲存"})
+
+#查詢測驗紀錄
+@app.route("/api/quiz/history", methods=["GET"])
+def get_quiz_history():
+    if "user_id" not in session:
+        return jsonify({"error": "未登入"}), 401
+
+    conn = get_db_connection()
+    records = conn.execute("""
+        SELECT id, level, score, total_questions, created_at
+        FROM quiz_records
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+        LIMIT 10
+    """, (session["user_id"],)).fetchall()
+    conn.close()
+
+    return jsonify([dict(r) for r in records])
+
+#查詢單筆詳細記錄
+@app.route("/api/quiz/result/<int:record_id>", methods=["GET"])
+def get_quiz_result_detail(record_id):
+    if "user_id" not in session:
+        return jsonify({"error": "未登入"}), 401
+
+    conn = get_db_connection()  # 已自帶 row_factory
+
+    # 驗證這筆紀錄是否屬於此使用者
+    record = conn.execute(
+        "SELECT * FROM quiz_records WHERE id=? AND user_id=?",
+        (record_id, session["user_id"])
+    ).fetchone()
+
+    if not record:
+        conn.close()
+        return jsonify({"error": "找不到紀錄"}), 404
+
+    # 查詢該筆測驗的所有答題項目
+    items = conn.execute("""
+        SELECT word, correct_answer, chosen_answer, is_correct
+        FROM quiz_items
+        WHERE record_id = ?
+    """, (record_id,)).fetchall()
+
+    conn.close()
+
+    return jsonify({
+        "record": dict(record),
+        "items": [dict(i) for i in items]
+    })
+
+
+
     
 # 圖片上傳
 UPLOAD_FOLDER = "static/avatars"

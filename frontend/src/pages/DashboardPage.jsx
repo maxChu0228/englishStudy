@@ -1,4 +1,3 @@
-// src/pages/DashboardPage.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -11,8 +10,17 @@ function DashboardPage() {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
 
+  const [checkIns, setCheckIns] = useState(["2025-05-28", "2025-05-29"]);
+  const [tasks, setTasks] = useState({
+    "2025-05-29": {
+      advancedQuiz: true,
+      accuracyOver70: false,
+    },
+  });
+
   useEffect(() => {
-    api.get("/api/check-session")
+    api
+      .get("/api/check-session")
       .then((res) => {
         if (res.data.loggedIn) {
           setChecking(false);
@@ -30,50 +38,60 @@ function DashboardPage() {
   return (
     <>
       <Navbar />
-      <div className="flex h-[calc(100vh-120px)] w-full px-6 pt-3 gap-6">
-        {/* 左側：使用者資訊卡 */}
-        <div className="w-1/3 flex justify-center">
-          <div className="w-full max-w-sm">
-            <UserProfileCard />
+      <div className="bg-[#f5f6f8] min-h-screen w-full px-4 pt-6 pb-12">
+        <div className="flex max-w-[1440px] mx-auto gap-4 justify-between items-stretch">
+          {/* 左側：個人資訊卡 */}
+          <div className="w-[25%] min-h-[620px]">
+            <div className="bg-white border border-blue-100 rounded-xl p-4 shadow-sm h-full">
+              <UserProfileCard />
+            </div>
           </div>
-        </div>
 
-        {/* 右側：學習功能區（可滾動） */}
-        <div className="w-2/3 overflow-y-auto pr-4">
-          <div className="flex flex-col gap-8">
-            
-            {/* 📝 測驗區塊 */}
-            <section>
+          {/* 中間：日曆 + 測驗模式 */}
+          <div className="w-[50%] flex flex-col gap-4 min-h-[620px]">
+            <div className="bg-white border border-blue-100 rounded-xl p-6 shadow-sm w-full">
+              <LearningStatsCard
+                checkIns={checkIns}
+                setCheckIns={setCheckIns}
+                tasks={tasks}
+              />
+            </div>
+            <div className="bg-white border border-blue-100 rounded-xl p-10 shadow-sm w-full">
               <h2 className="text-xl font-bold mb-4 text-blue-700">📝 測驗模式</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <LevelCard
-                  title="初級關卡"
+                  title="基礎模式"
                   description="常見基本單字，適合新手"
                   level="easy"
                   type="quiz"
                   locked={false}
+                  onClick={() => navigate("/game?level=easy")}
                 />
                 <LevelCard
-                  title="進階關卡"
-                  description="需完成初級才能解鎖"
+                  title="進階模式"
+                  description="挑戰進階單字，更具難度"
                   level="medium"
                   type="quiz"
-                  locked={true}
+                  locked={false}
+                  onClick={() => navigate("/game?level=medium")}
                 />
                 <LevelCard
-                  title="挑戰關卡"
-                  description="最高難度，限高手挑戰"
-                  level="hard"
+                  title="混合模式"
+                  description="隨機抽題，自由發揮"
+                  level="mixed"
                   type="quiz"
-                  locked={true}
+                  locked={false}
+                  onClick={() => navigate("/game?level=mixed")}
                 />
               </div>
-            </section>
+            </div>
+          </div>
 
-            {/* 📚 背單字區塊 */}
-            <section>
+          {/* 右側：背單字模式（直式） */}
+          <div className="w-[25%] min-h-[620px]">
+            <div className="bg-white border border-blue-100 rounded-xl p-6 shadow-sm h-full">
               <h2 className="text-xl font-bold mb-4 text-green-700">📚 背單字模式</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="flex flex-col gap-4">
                 <LevelCard
                   title="常見單字"
                   description="適合打基礎"
@@ -96,9 +114,7 @@ function DashboardPage() {
                   locked={false}
                 />
               </div>
-            </section>
-            <LearningStatsCard />
-
+            </div>
           </div>
         </div>
       </div>

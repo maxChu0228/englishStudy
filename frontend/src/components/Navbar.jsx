@@ -58,13 +58,20 @@ function Navbar() {
         </Box>
 
         <Box display="flex" alignItems="center">
-          {/* 新增首頁按鈕 */}
           <Button
             component={Link}
             to="/"
             sx={{ color: "#333", fontWeight: "bold", textTransform: "none", mr: 2 }}
           >
             首頁
+          </Button>
+
+          <Button
+            component={Link}
+            to="/quiz/history"
+            sx={{ color: "#333", fontWeight: "bold", textTransform: "none", mr: 2 }}
+          >
+            測驗紀錄
           </Button>
 
           {user ? (

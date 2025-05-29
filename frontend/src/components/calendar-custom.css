@@ -1,5 +1,72 @@
-.react-calendar__tile.highlight {
-  background: #86efac !important;
-  color: black !important;
+.react-calendar {
+  border: none;
+  font-family: 'Inter', sans-serif;
+  width: 100%;
+  background: transparent;
+}
+
+.react-calendar__navigation {
+  display: flex;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.react-calendar__navigation button {
+  background: none;
+  border: none;
+  color: #333;
+  font-size: 1.25rem;
+  margin: 0 0.5rem;
+}
+
+.react-calendar__month-view__weekdays {
+  text-align: center;
+  text-transform: capitalize;
+  font-weight: 500;
+  color: #888;
+  font-size: 0.85rem;
+  border: none;
+}
+
+.react-calendar__month-view__weekdays__weekday {
+  padding: 0.5rem 0;
+}
+
+.react-calendar__tile {
+  background: none;
+  height: 42px;
+  width: 42px;
+  padding: 0;
   border-radius: 50%;
+  text-align: center;
+  line-height: 42px;
+  font-size: 0.85rem;
+  margin: 4px auto;
+  transition: all 0.2s ease-in-out;
+  color: #222;
+}
+
+.calendar-complete {
+  background-color: rgba(76, 175, 80, 0.2);  /* 淺綠色 */
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+/* 圓形任務狀態 */
+.calendar-green {
+  background-color: rgba(102, 187, 106, 0.3);
+}
+
+.calendar-yellow {
+  background-color: rgba(255, 235, 59, 0.3);
+}
+
+.calendar-purple {
+  background-color: rgba(186, 104, 200, 0.3);
+}
+
+.calendar-complete {
+  background-color: rgba(33, 150, 243, 0.25);
 }

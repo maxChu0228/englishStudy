@@ -1,28 +1,35 @@
 import Calendar from "react-calendar";
 import 'react-calendar/dist/Calendar.css';
 import './calendar-custom.css';
+import { Pencil } from "lucide-react";
 
-function CheckInCard({ checkIns = [], tasks = {} }) {
+function CheckInCard({ checkIns = [], tasks = {}, dailyGoals = [], onEditGoal }) {
   const today = new Date().toISOString().split("T")[0];
-  const todayTasks = tasks[today] || {
-    advancedQuiz: false,
-    accuracyOver70: false
+  const todayProgress = tasks[today] || {}; // e.g., { goalId1: 100, goalId2: 60 }
+
+  const tileClassName = ({ date }) => {
+    const dateStr = date.toISOString().split("T")[0];
+    const progressMap = tasks[dateStr] || {};
+    const allDone = Object.values(progressMap).length > 0 && Object.values(progressMap).every(v => v >= 100);
+    return allDone ? "calendar-complete" : null;
   };
 
-const tileClassName = ({ date }) => {
-  const dateStr = date.toISOString().split("T")[0];
-  const dayTasks = tasks[dateStr] || {};
+  const getGoalLabel = (goal) => {
+    if (goal.type === "accuracy") {
+      return `最近 ${goal.count} 次測驗正確率 ≥ ${goal.accuracy}%`;
+    } else {
+      return `完成 ${goal.count} 次${getTypeLabel(goal.type)}測驗`;
+    }
+  };
 
-  // ✅ 確保只有「所有任務都完成」才標記
-  const allDone = Object.values(dayTasks).length > 0 && Object.values(dayTasks).every(v => v === true);
-
-  return allDone ? "calendar-complete" : null;
-};
-
-
+  const getTypeLabel = (type) => {
+    if (type === "advancedQuiz") return "進階";
+    if (type === "easyQuiz") return "基礎";
+    return "";
+  };
 
   return (
-    <div className="w-full flex flex-col md:flex-row gap-6 bg-white p-4 rounded-xl ">
+    <div className="w-full flex flex-col md:flex-row gap-6 bg-white p-4 rounded-xl relative">
       {/* 📅 日曆 */}
       <div className="md:w-1/2 flex justify-center items-center">
         <Calendar
@@ -40,12 +47,37 @@ const tileClassName = ({ date }) => {
       </div>
 
       {/* 🎯 任務 */}
-      <div className="md:w-1/2">
-        <h2 className="text-lg font-semibold text-pink-600 mb-4">🎯 今日任務</h2>
-        <div className="space-y-4">
-          <TaskItem label="完成 3 次進階測驗" done={todayTasks.advancedQuiz} />
-          <TaskItem label="答對率 ≥ 70%" done={todayTasks.accuracyOver70} />
-        </div>
+      <div className="md:w-1/2 relative">
+        <h2 className="text-lg font-semibold text-pink-600 mb-4 flex items-center justify-between">
+          🎯 今日任務
+          <button
+            className="text-gray-500 hover:text-black text-sm"
+            onClick={onEditGoal}
+          >
+            <Pencil size={16} className="inline-block mr-1" /> 設定 / 新增目標
+          </button>
+        </h2>
+
+        {dailyGoals.length > 0 ? (
+          <div className="space-y-4">
+            {dailyGoals.map((goal) => (
+              <TaskItem
+                key={goal.id}
+                label={getGoalLabel(goal)}
+                progress={todayProgress[goal.id] || 0}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center rounded-xl">
+            <button
+              onClick={onEditGoal}
+              className="bg-pink-600 text-white px-4 py-2 rounded shadow-md hover:bg-pink-700"
+            >
+              點此設定今日目標
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -71,6 +103,5 @@ function TaskItem({ label, progress }) {
     </div>
   );
 }
-
 
 export default CheckInCard;

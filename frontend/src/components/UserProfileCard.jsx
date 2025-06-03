@@ -15,13 +15,28 @@ function UserProfileCard() {
   const fileInputRef = useRef();
 
   // 📌 暫時假資料，未來可從後端 API 取得
-  const completed = 12;
-  const correctRate = 87;
+  const [completed, setCompleted] = useState(0);
+  const [correctRate, setCorrectRate] = useState(0);
   const totalRequired = 50;
   const level = getLevel(completed);
   const progressPercent = Math.min((completed / totalRequired) * 100, 100);
   const recentMistakes = ["environment", "delicious", "opportunity"];
 
+
+
+useEffect(() => {
+  api.get("/api/user").then((res) => {
+    setUsername(res.data.username);
+    if (res.data.avatar) {
+      setAvatar(`http://localhost:5000/static/avatars/${res.data.avatar}`);
+    }
+  });
+
+  api.get("/api/quiz/stats").then((res) => {
+    setCompleted(res.data.completed);
+    setCorrectRate(res.data.accuracy);
+  });
+}, []);
 
   useEffect(() => {
     api.get("/api/user")
@@ -94,7 +109,7 @@ function UserProfileCard() {
 
       {/* 額外統計 */}
       <div className="mt-6 text-base space-y-2 text-left">
-        <div>✔️ 完成題數：{completed}</div>
+        <div>✔️ 測驗完成次數：{completed}</div>
         <div>🎯 正確率：{correctRate}%</div>
       </div>
       <div className="mt-6 text-left">

@@ -21,6 +21,15 @@ function QuizHistoryPage() {
           <Typography variant="h5" fontWeight="bold" gutterBottom>📜 測驗紀錄</Typography>
           <Table>
             <TableHead>
+              <TableRow>
+                <TableCell>日期時間</TableCell>
+                <TableCell>等級</TableCell>
+                <TableCell>得分</TableCell>
+                <TableCell>總題數</TableCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody>
               {history.map((record) => (
                 <TableRow key={record.id}>
                   <TableCell>
@@ -28,16 +37,6 @@ function QuizHistoryPage() {
                       {new Date(record.created_at).toLocaleString()}
                     </Link>
                   </TableCell>
-                  <TableCell>{record.level}</TableCell>
-                  <TableCell>{record.score}</TableCell>
-                  <TableCell>{record.total_questions}</TableCell>
-                </TableRow>
-              ))}
-            </TableHead>
-            <TableBody>
-              {history.map((record) => (
-                <TableRow key={record.id}>
-                  <TableCell>{new Date(record.created_at).toLocaleString()}</TableCell>
                   <TableCell>{record.level}</TableCell>
                   <TableCell>{record.score}</TableCell>
                   <TableCell>{record.total_questions}</TableCell>

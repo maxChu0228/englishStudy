@@ -52,6 +52,36 @@ function QuizResultPage() {
               </Typography>
             </Box>
           ))}
+          <Box mt={4} display="flex" justifyContent="center" gap={3}>
+            <button
+              onClick={() => window.location.href = "/dashboard"}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-6 rounded-lg border border-gray-300 transition duration-200"
+            >
+              ⬅️ 返回主頁
+            </button>
+
+            <button
+              onClick={async () => {
+                try {
+                  const wrongItems = result.items.filter(i => !i.is_correct);
+                  for (const item of wrongItems) {
+                    await axios.post(
+                      "http://localhost:5000/api/favorites",
+                      { word_id: item.word_id },
+                      { withCredentials: true }
+                    );
+                  }
+                  alert("⭐ 錯題已加入收藏！");
+                } catch (err) {
+                  console.error("收藏錯題失敗", err);
+                  alert("❌ 收藏失敗，請稍後再試");
+                }
+              }}
+              className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-2 px-6 rounded-lg border border-yellow-300 transition duration-200"
+            >
+              ⭐ 收藏錯題
+            </button>
+          </Box>
         </Paper>
       </Box>
       </div>

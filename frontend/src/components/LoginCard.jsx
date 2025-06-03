@@ -59,7 +59,7 @@ function LoginCard() {
 
         <Typography
           component={Link}
-          to="/signup"
+          to="/register"
           sx={{
             fontSize: "14px",
             color: "#5e4b9a",
@@ -77,7 +77,7 @@ function LoginCard() {
       {/* 輸入欄位 */}
       <TextField
         fullWidth
-        placeholder="E-mail"
+        placeholder="Username"
         variant="standard"
         value={email}
         onChange={(e) => setEmail(e.target.value)}

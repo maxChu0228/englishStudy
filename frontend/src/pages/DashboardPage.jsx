@@ -93,9 +93,16 @@ function DashboardPage() {
               <h2 className="text-xl font-bold mb-4 text-green-700">📚 背單字模式</h2>
               <div className="flex flex-col gap-4">
                 <LevelCard
-                  title="常見單字"
+                  title="基礎單字"
                   description="適合打基礎"
-                  level="common"
+                  level="easy"
+                  type="study"
+                  locked={false}
+                />
+                <LevelCard
+                  title="進階單字"
+                  description="適合程度較好的學生"
+                  level="medium"
                   type="study"
                   locked={false}
                 />
@@ -105,6 +112,7 @@ function DashboardPage() {
                   level="starred"
                   type="study"
                   locked={false}
+                  onClick={() => navigate("/study?type=starred")}
                 />
                 <LevelCard
                   title="高頻單字"

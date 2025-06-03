@@ -40,6 +40,27 @@ def logout():
     response.set_cookie("session", "", expires=0)  # 清除 cookie 名稱依你設定為主
     return response
 
+#註冊
+@app.route("/register", methods=["POST"])
+def register():
+    data = request.get_json()
+    username = data.get("username")
+    password = data.get("password")
+
+    if not username or not password:
+        return jsonify({"error": "請填入帳號與密碼"}), 400
+
+    conn = sqlite3.connect("vocab.db")
+    c = conn.cursor()
+    try:
+        c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", (username, password, "user"))
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "註冊成功"})
+    except sqlite3.IntegrityError:
+        conn.close()
+        return jsonify({"error": "帳號已存在"}), 409
+
 # 🔹 使用者資訊 API
 @app.route("/api/user")
 def get_user():
@@ -196,9 +217,8 @@ def get_quiz_result_detail(record_id):
     if "user_id" not in session:
         return jsonify({"error": "未登入"}), 401
 
-    conn = get_db_connection()  # 已自帶 row_factory
+    conn = get_db_connection()
 
-    # 驗證這筆紀錄是否屬於此使用者
     record = conn.execute(
         "SELECT * FROM quiz_records WHERE id=? AND user_id=?",
         (record_id, session["user_id"])
@@ -208,21 +228,125 @@ def get_quiz_result_detail(record_id):
         conn.close()
         return jsonify({"error": "找不到紀錄"}), 404
 
-    # 查詢該筆測驗的所有答題項目
+    # 🟡 ✅ 你要在這裡改「查答題細項」這一段 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
     items = conn.execute("""
-        SELECT word, correct_answer, chosen_answer, is_correct
-        FROM quiz_items
-        WHERE record_id = ?
+        SELECT qi.word, qi.correct_answer, qi.chosen_answer, qi.is_correct, w.id AS word_id
+        FROM quiz_items qi
+        JOIN words w ON qi.word = w.word
+        WHERE qi.record_id = ?
     """, (record_id,)).fetchall()
 
     conn.close()
 
     return jsonify({
         "record": dict(record),
-        "items": [dict(i) for i in items]
+        "items": [dict(i) for i in items]  # 前端就能拿到 word_id
     })
 
 
+#抓簡單單字
+@app.route("/api/words", methods=["GET"])
+def get_words():
+    level = request.args.get("level", "easy")
+    conn = get_db_connection()
+
+    if level == "starred":
+        if "user_id" not in session:
+            return jsonify({"error": "未登入"}), 401
+
+        words = conn.execute("""
+            SELECT w.*
+            FROM favorites f
+            JOIN words w ON f.word_id = w.id
+            WHERE f.user_id = ?
+        """, (session["user_id"],)).fetchall()
+    else:
+        words = conn.execute("SELECT * FROM words WHERE level=?", (level,)).fetchall()
+
+    conn.close()
+    return jsonify([dict(w) for w in words])
+
+
+#收藏單字
+@app.route("/api/favorites", methods=["POST"])
+def add_favorite():
+    if "user_id" not in session:
+        return jsonify({"error": "未登入"}), 401
+
+    data = request.get_json()
+    word_id = data.get("word_id")
+
+    if not word_id:
+        return jsonify({"error": "缺少單字 ID"}), 400
+
+    conn = get_db_connection()
+    try:
+        conn.execute("INSERT INTO favorites (user_id, word_id) VALUES (?, ?)", (session["user_id"], word_id))
+        conn.commit()
+        return jsonify({"message": "已加入收藏"})
+    except sqlite3.IntegrityError:
+        return jsonify({"message": "已經收藏過了"})
+    finally:
+        conn.close()
+
+#抓收藏的單字
+@app.route("/api/favorites", methods=["GET"])
+def get_favorites():
+    if "user_id" not in session:
+        return jsonify({"error": "未登入"}), 401
+
+    conn = get_db_connection()
+    rows = conn.execute("""
+        SELECT w.id, w.word, w.meaning, w.level
+        FROM favorites f
+        JOIN words w ON f.word_id = w.id
+        WHERE f.user_id = ?
+    """, (session["user_id"],)).fetchall()
+    conn.close()
+
+    return jsonify([dict(row) for row in rows])
+
+#取消收藏
+@app.route("/api/favorites/<int:word_id>", methods=["DELETE"])
+def remove_favorite(word_id):
+    if "user_id" not in session:
+        return jsonify({"error": "未登入"}), 401
+
+    conn = get_db_connection()
+    conn.execute("DELETE FROM favorites WHERE user_id = ? AND word_id = ?", (session["user_id"], word_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "已取消收藏"})
+
+#抓個人答題狀態
+@app.route("/api/quiz/stats")
+def get_quiz_stats():
+    if "user_id" not in session:
+        return jsonify({"error": "未登入"}), 401
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # 取得該使用者的測驗資料
+    cursor.execute("""
+        SELECT COUNT(*) AS count, SUM(score) AS total_score, SUM(total_questions) AS total_questions
+        FROM quiz_records
+        WHERE user_id = ?
+    """, (session["user_id"],))
+    
+    row = cursor.fetchone()
+    conn.close()
+
+    count = row["count"] or 0
+    total_score = row["total_score"] or 0
+    total_questions = row["total_questions"] or 0
+
+    accuracy = round((total_score / total_questions) * 100, 1) if total_questions > 0 else 0
+
+    return jsonify({
+        "completed": count,
+        "accuracy": accuracy
+    })
 
     
 # 圖片上傳
@@ -257,6 +381,119 @@ def upload_avatar():
     conn.close()
 
     return jsonify({"message": "上傳成功", "avatarPath": filename})
+    
+def get_user_id():
+    if "user" not in session:
+        return None
+
+    conn = sqlite3.connect("vocab.db")
+    c = conn.cursor()
+    c.execute("SELECT id FROM users WHERE username = ?", (session["user"],))
+    row = c.fetchone()
+    conn.close()
+
+    return row[0] if row else None
+
+#設定目標
+# @app.route("/api/daily-goal", methods=["POST"])
+# def set_daily_goal():
+#     user_id = get_user_id()
+#     if not user_id:
+#         return jsonify({"error": "未登入"}), 401
+
+#     goals = request.json  # ← 現在會是一個 list
+#     if not isinstance(goals, list):
+#         return jsonify({"error": "資料格式錯誤"}), 400
+
+#     conn = sqlite3.connect("vocab.db")
+#     c = conn.cursor()
+
+#     # 先刪除使用者舊的目標
+#     c.execute("DELETE FROM daily_goals WHERE user_id=?", (user_id,))
+
+#     for goal in goals:
+#         type_ = goal.get("type")
+#         count = goal.get("count")
+#         accuracy = goal.get("accuracy")  # 可為 None
+#         c.execute(
+#             "INSERT INTO daily_goals (user_id, type, count, accuracy) VALUES (?, ?, ?, ?)",
+#             (user_id, type_, count, accuracy)
+#         )
+
+#     conn.commit()
+#     conn.close()
+
+#     return jsonify({"message": "所有目標已儲存"})
+
+
+# 新增目標
+@app.route("/api/daily-goal/add", methods=["POST"])
+def add_daily_goal():
+    user_id = get_user_id()
+    if not user_id:
+        return jsonify({"error": "未登入"}), 401
+
+    data = request.json
+    type_ = data.get("type")
+    count = data.get("count")
+    accuracy = data.get("accuracy")
+
+    conn = sqlite3.connect("vocab.db")
+    c = conn.cursor()
+    c.execute(
+        "INSERT INTO daily_goals (user_id, type, count, accuracy) VALUES (?, ?, ?, ?)",
+        (user_id, type_, count, accuracy)
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "目標已新增"})
+
+# 更新單一目標
+@app.route("/api/daily-goal/update/<int:goal_id>", methods=["POST"])
+def update_daily_goal(goal_id):
+    user_id = get_user_id()
+    if not user_id:
+        return jsonify({"error": "未登入"}), 401
+
+    data = request.json
+    type_ = data.get("type")
+    count = data.get("count")
+    accuracy = data.get("accuracy")
+
+    conn = sqlite3.connect("vocab.db")
+    c = conn.cursor()
+    c.execute(
+        """
+        UPDATE daily_goals
+        SET type = ?, count = ?, accuracy = ?
+        WHERE id = ? AND user_id = ?
+        """,
+        (type_, count, accuracy, goal_id, user_id)
+    )
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "目標已更新"})
+
+
+
+
+# 取得所有目標
+@app.route("/api/daily-goal", methods=["GET"])
+def get_daily_goals():
+    user_id = get_user_id()
+    if not user_id:
+        return jsonify({"error": "未登入"}), 401
+
+    conn = sqlite3.connect("vocab.db")
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT * FROM daily_goals WHERE user_id=?", (user_id,))
+    rows = c.fetchall()
+    conn.close()
+
+    return jsonify([dict(row) for row in rows])
+
 
 
 

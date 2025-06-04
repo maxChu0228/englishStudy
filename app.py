@@ -4,6 +4,8 @@ from werkzeug.utils import secure_filename
 import sqlite3
 import random
 from flask_cors import CORS
+from datetime import datetime
+import pytz
 
 app = Flask(__name__)
 app.secret_key = "my_english_game_123"  # session 加密金鑰
@@ -164,15 +166,19 @@ def submit_quiz_result():
 
     if not (level and isinstance(score, int) and isinstance(total, int) and isinstance(answers, list)):
         return jsonify({"error": "資料格式錯誤"}), 400
+    
+    tz = pytz.timezone("Asia/Taipei")
+    taiwan_now = datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S")
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
     # 插入 quiz_records
     cursor.execute("""
-        INSERT INTO quiz_records (user_id, level, score, total_questions)
-        VALUES (?, ?, ?, ?)
-    """, (session["user_id"], level, score, total))
+        INSERT INTO quiz_records
+          (user_id, level, score, total_questions, created_at)
+        VALUES (?, ?, ?, ?, ?)
+    """, (session["user_id"], level, score, total, taiwan_now))
     record_id = cursor.lastrowid
 
     # 插入 quiz_items
@@ -438,11 +444,19 @@ def add_daily_goal():
     count = data.get("count")
     accuracy = data.get("accuracy")
 
+    tz = pytz.timezone("Asia/Taipei")
+    taiwan_now = datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S")
+    taiwan_date = datetime.now(tz).date()
+
     conn = sqlite3.connect("vocab.db")
     c = conn.cursor()
     c.execute(
-        "INSERT INTO daily_goals (user_id, type, count, accuracy) VALUES (?, ?, ?, ?)",
-        (user_id, type_, count, accuracy)
+        """
+        INSERT INTO daily_goals 
+          (user_id, type, count, accuracy, created_at, goal_date)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (user_id, type_, count, accuracy, taiwan_now, taiwan_date)
     )
     conn.commit()
     conn.close()
@@ -460,16 +474,21 @@ def update_daily_goal(goal_id):
     count = data.get("count")
     accuracy = data.get("accuracy")
 
+    tz = pytz.timezone("Asia/Taipei")
+    taiwan_now = datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S")
+    taiwan_date = datetime.now(tz).date()
+
     conn = sqlite3.connect("vocab.db")
     c = conn.cursor()
-    c.execute(
-        """
+    tz = pytz.timezone("Asia/Taipei")
+    taiwan_date = datetime.now(tz).date()
+
+    c.execute("""
         UPDATE daily_goals
-        SET type = ?, count = ?, accuracy = ?
+        SET type = ?, count = ?, accuracy = ?,created_at = ?, goal_date = ?
         WHERE id = ? AND user_id = ?
-        """,
-        (type_, count, accuracy, goal_id, user_id)
-    )
+    """, (type_, count, accuracy,taiwan_now, taiwan_date, goal_id, user_id))
+
     conn.commit()
     conn.close()
 
@@ -485,14 +504,21 @@ def get_daily_goals():
     if not user_id:
         return jsonify({"error": "未登入"}), 401
 
+    tz = pytz.timezone("Asia/Taipei")
+    taiwan_date = datetime.now(tz).date()
+
     conn = sqlite3.connect("vocab.db")
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    c.execute("SELECT * FROM daily_goals WHERE user_id=?", (user_id,))
+    c.execute("""
+        SELECT * FROM daily_goals
+        WHERE user_id = ? AND goal_date = ?
+    """, (user_id, taiwan_date))
     rows = c.fetchall()
     conn.close()
 
     return jsonify([dict(row) for row in rows])
+
 
 
 

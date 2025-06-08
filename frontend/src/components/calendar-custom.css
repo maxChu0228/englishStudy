@@ -48,11 +48,6 @@
   color: #222;
 }
 
-.calendar-complete {
-  background-color: rgba(76, 175, 80, 0.2);  /* 淺綠色 */
-  color: #2e7d32;
-  font-weight: bold;
-}
 
 /* 圓形任務狀態 */
 .calendar-green {
@@ -67,6 +62,15 @@
   background-color: rgba(186, 104, 200, 0.3);
 }
 
+/* 如果用的是 react-calendar v3+，.calendar-complete 會套到 <div class="react-calendar__tile calendar-complete"> */
 .calendar-complete {
-  background-color: rgba(33, 150, 243, 0.25);
+  background-color: #9AE6B4 !important;    /* 綠色背景 (Tailwind 的 green-200) */
+  color: #22543D !important;              /* 深綠文字 (Tailwind 的 green-800) */
+  border-radius: 0.5rem;                   /* 比較圓的圓角，看起來可愛 */
+}
+
+/* 當滑鼠 hover 在已完成日期時，可以加一點 hover 效果 */
+.calendar-complete:hover {
+  background-color: #68D391 !important;    /* 綠色 (Tailwind green-400) */
+  color: white !important;
 }

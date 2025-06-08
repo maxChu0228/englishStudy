@@ -9,8 +9,8 @@ import GameResultPage from "./pages/GameResultPage";
 import QuizHistoryPage from "./pages/QuizHistoryPage";
 import QuizResultPage from "./pages/QuizResultPage";
 import StudyLevelPage from "./pages/StudyLevelPage";
-
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdvancedLeaderboard from "./pages/AdvancedLeaderboard";
 
 function App() {
   return (
@@ -52,6 +52,13 @@ function App() {
             <StudyLevelPage />
           </ProtectedRoute>
         } />
+          <Route
+          path="/leaderboard" element={
+            <ProtectedRoute>
+              <AdvancedLeaderboard />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );

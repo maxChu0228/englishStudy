@@ -17,6 +17,8 @@ import HomeIcon from "@mui/icons-material/Home";
 import HistoryIcon from "@mui/icons-material/History";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Star } from "lucide-react";
+import LeaderboardIcon from "@mui/icons-material/Leaderboard";
+
 
 
 function Navbar() {
@@ -103,7 +105,7 @@ function Navbar() {
           {navButton("/dashboard", "個人主頁", <HomeIcon fontSize="medium" />)}
           {navButton("/quiz/history", "測驗紀錄", <HistoryIcon fontSize="medium" />)}
           {navButton("/study?type=starred", "收藏單字", <Star size={20} />)}
-
+          {navButton("/leaderboard",    "排行榜",     <LeaderboardIcon fontSize="medium" />)}
 
           <IconButton sx={{ color: "#333", mr: 2 }}>
             <Badge badgeContent={0} color="error">

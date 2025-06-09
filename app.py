@@ -261,6 +261,28 @@ def get_quiz_stats():
     acc = round((row["total_score"]/totq)*100,1) if totq else 0
     return jsonify(completed=cnt, accuracy=acc)
 
+
+@app.route("/api/quiz/mistakes", methods=["GET"])
+def get_recent_mistakes():
+    user_id = get_user_id()
+    if not user_id:
+        return jsonify(error="未登入"), 401
+
+    conn = get_db_connection()
+    # 取最近 5 筆 is_correct = 0 的 word，依 record 的 created_at 排序
+    rows = conn.execute("""
+        SELECT qi.word
+        FROM quiz_items qi
+        JOIN quiz_records qr ON qi.record_id = qr.id
+        WHERE qr.user_id = ? AND qi.is_correct = 0
+        ORDER BY qr.created_at DESC
+        LIMIT 5
+    """, (user_id,)).fetchall()
+    conn.close()
+
+    mistakes = [r["word"] for r in rows]
+    return jsonify(mistakes)
+
 # ─── 收藏功能 ─────────────────────────────────────────────────────────
 
 @app.route("/api/favorites", methods=["POST"])
@@ -478,7 +500,7 @@ def upload_avatar():
 @app.route("/api/leaderboard/advanced", methods=["GET"])
 def get_leaderboard_advanced():
     # 1. 從 query string 拿參數，並給預設值
-    min_accuracy = float(request.args.get("min_accuracy", 70))   # 平均正確率最低 70%
+    min_accuracy = float(request.args.get("min_accuracy", 10))   # 平均正確率最低 70%
     min_quizzes  = int(request.args.get("min_quizzes", 5))      # 至少 5 次測驗
     limit        = int(request.args.get("limit", 10))           # 顯示前 10 名
     page         = int(request.args.get("page", 1))
@@ -528,6 +550,60 @@ def get_leaderboard_advanced():
         })
 
     return jsonify(result)
+
+
+@app.route("/api/leaderboard/advanced/me", methods=["GET"])
+def get_my_leaderboard_rank():
+    # 1. 參數
+    min_accuracy = float(request.args.get("min_accuracy", 10))
+    min_quizzes  = int(request.args.get("min_quizzes", 5))
+
+    # 2. 檢查登入
+    uid = get_user_id()
+    if not uid:
+        return jsonify(error="未登入"), 401
+
+    # 3. 把所有符合條件的使用者拉出來，並排序
+    sql = """
+    SELECT
+      u.id            AS user_id,
+      u.username      AS username,
+      COUNT(r.id)     AS quiz_count,
+      SUM(r.score)*1.0 / SUM(r.total_questions)*100 AS accuracy,
+      COUNT(r.id)*(SUM(r.score)*1.0 / SUM(r.total_questions)) AS weighted_score
+    FROM quiz_records r
+    JOIN users u ON r.user_id = u.id
+    GROUP BY u.id
+    HAVING quiz_count >= ?
+       AND accuracy   >= ?
+    ORDER BY weighted_score DESC, quiz_count DESC
+    """
+    conn = get_db_connection()
+    rows = conn.execute(sql, (min_quizzes, min_accuracy)).fetchall()
+    conn.close()
+
+    # 4. 找出當前使用者的名次
+    my_rank = None
+    for idx, row in enumerate(rows):
+        if row["user_id"] == uid:
+            my_rank = idx + 1
+            my_username      = row["username"]
+            my_quiz_count    = row["quiz_count"]
+            my_accuracy      = round(row["accuracy"], 1)
+            my_weighted     = round(row["weighted_score"], 1)
+            break
+
+    # 5. 回傳結果
+    if my_rank is None:
+        return jsonify({"message": "尚未達成排行榜條件"}), 200
+
+    return jsonify({
+        "rank":           my_rank,
+        "username":       my_username,
+        "quiz_count":     my_quiz_count,
+        "accuracy":       my_accuracy,
+        "weighted_score": my_weighted
+    })
 
 
 

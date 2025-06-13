@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Box, Button, Typography, Paper, Stack } from "@mui/material";
-import axios from "axios";
 import Navbar from "../components/Navbar";
+import api from "../api";
 
 function GamePage() {
   const navigate = useNavigate();
@@ -19,22 +19,25 @@ function GamePage() {
 
   const question = questions[currentIndex];
 
-  const fetchQuestions = async () => {
-    try {
-      const res = await axios.get(`http://localhost:5000/api/quiz?level=${level}&count=10`, { withCredentials: true });
-      setQuestions(res.data);
-      setCurrentIndex(0);
-      setQuestionCount(1);
-      setSelected(null);
-      setFeedback(null);
-      setScore(0);
-      setWrongAnswers([]);
-    } catch (err) {
-      console.error("Failed to fetch quiz questions:", err);
-    }
-  };
 
   useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const { data } = await api.get(`/api/quiz`, {
+          params: { level, count: 10 },
+        });
+        setQuestions(data);
+        setCurrentIndex(0);
+        setQuestionCount(1);
+        setSelected(null);
+        setFeedback(null);
+        setScore(0);
+        setWrongAnswers([]);
+      } catch (err) {
+        console.error("Failed to fetch quiz questions:", err);
+      }
+    };
+
     fetchQuestions();
   }, [level]);
 
@@ -66,16 +69,16 @@ const handleNext = async () => {
     });
 
     // 發送 POST 請求到後端儲存測驗紀錄
-    try {
-      await axios.post("http://localhost:5000/api/quiz/submit", {
-        level,
-        score,
-        total: 10,
-        answers
-      }, { withCredentials: true });
-    } catch (err) {
-      console.error("測驗紀錄儲存失敗：", err);
-    }
+     try {
+        await api.post("/api/quiz/submit", {
+          level,
+          score,
+          total: 10,
+          answers,
+        });
+      } catch (err) {
+        console.error("測驗紀錄儲存失敗：", err);
+      }
 
     // 導向結果頁
     navigate("/game/result", {

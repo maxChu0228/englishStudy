@@ -42,30 +42,28 @@ export default function UserProfileCard() {
   const [myRankData, setMyRankData] = useState(null);
 
   // 從後端抓基本資料與統計
-  useEffect(() => {
-    api.get("/api/user").then(res => {
-      setUsername(res.data.username);
-      if (res.data.avatar) {
-        setAvatar(`http://localhost:5000/static/avatars/${res.data.avatar}`);
-      }
-    });
-    api.get("/api/quiz/stats").then(res => {
-      setCompleted(res.data.completed);
-      setCorrectRate(res.data.accuracy);
-    });
-    api.get("/api/leaderboard/advanced/me", {
-        params: {
-          min_accuracy: 10,
-          min_quizzes: 5
-        }
-      })
-      .then(res => setMyRankData(res.data))
-            .catch(console.error);
-      
-    api.get("/api/quiz/mistakes")
-       .then(res => setRecentMistakes(res.data))
-       .catch(console.error);
-          }, []);
+useEffect(() => {
+  api.get("/api/user").then(({ data }) => {
+    setUsername(data.username);
+    if (data.avatar) {
+      setAvatar(`${api.defaults.baseURL}/static/avatars/${data.avatar}`);
+    }
+  });
+
+  api.get("/api/quiz/stats").then(({ data }) => {
+    setCompleted(data.completed);
+    setCorrectRate(data.accuracy);
+  });
+
+  api.get("/api/leaderboard/advanced/me", {
+    params: { min_accuracy: 10, min_quizzes: 5 }
+  }).then(({ data }) => setMyRankData(data))
+    .catch(console.error);
+
+  api.get("/api/quiz/mistakes")
+    .then(({ data }) => setRecentMistakes(data))
+    .catch(console.error);
+}, []);
           
   // 計算等級與進度
   const levelName = getLevelName(completed);

@@ -3,13 +3,13 @@ import { Link } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
 import Navbar from "../components/Navbar";
 import axios from "axios";
+import api from "../api";
 
 function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/api/check-session", { withCredentials: true })
+    api.get("/api/check-session")
       .then((res) => {
         if (res.data.loggedIn) {
           setIsLoggedIn(true);

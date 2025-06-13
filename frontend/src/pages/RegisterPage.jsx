@@ -11,6 +11,7 @@ import {
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Navbar from "../components/Navbar";
 import "../css/LoginPage.css"; // ✅ 共用動畫背景 CSS
+import api from "../api";
 
 function generateLetterRows(rowCount = 3, lettersPerRow = 30) {
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

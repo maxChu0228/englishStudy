@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate, Link } from "react-router-dom";
+import api from '../api';
 
 function LoginCard() {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,18 +19,18 @@ function LoginCard() {
   const navigate = useNavigate();
 
   const handleLogin = () => {
-    fetch("http://localhost:5000/login", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: email, password }),
+    api.post('/login', {
+      username: email,
+      password: password
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("登入失敗");
-        return res.json();
-      })
-      .then(() => navigate("/dashboard"))
-      .catch(() => setError("❌ 帳號或密碼錯誤"));
+    .then((res) => {
+      // 登入成功
+      navigate('/dashboard');
+    })
+    .catch((err) => {
+      // 失敗時 axios 會拋錯，你可以印 err.response.status 驗證是哪裡出問題
+      setError('❌ 帳號或密碼錯誤');
+    });
   };
 
   return (

@@ -11,13 +11,13 @@ import {
   Avatar,
   Badge,
 } from "@mui/material";
-import AccountCircle from "@mui/icons-material/AccountCircle";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import HomeIcon from "@mui/icons-material/Home";
 import HistoryIcon from "@mui/icons-material/History";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Star } from "lucide-react";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
+import api from "../api";
 
 
 
@@ -29,12 +29,12 @@ function Navbar() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/user", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
+    api.get("/api/user")
+      .then((res) => {
+        const data = res.data;
         setUser(data.username);
         if (data.avatar) {
-          setAvatar(`http://localhost:5000/static/avatars/${data.avatar}`);
+          setAvatar(`${api.defaults.baseURL}/static/avatars/${data.avatar}`);
         }
       })
       .catch(() => setUser(""));
@@ -45,13 +45,14 @@ function Navbar() {
   };
 
   const handleLogout = () => {
-    fetch("http://localhost:5000/logout", {
-      method: "POST",
-      credentials: "include"
-    }).then(() => {
+    api.post("/logout")
+    .then(() => {
       setUser("");
       setAvatar(null);
       navigate("/login");
+    })
+        .catch((err) => {
+      console.error("登出失敗", err);
     });
   };
 

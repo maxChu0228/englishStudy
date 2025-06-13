@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import axios from "axios";
 import Navbar from "../components/Navbar";
 import { Star, StarOff } from "lucide-react";
 import api from "../api";
@@ -24,39 +23,32 @@ function StudyLevelPage() {
   
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:5000/api/words?level=${level}`, { withCredentials: true })
-      .then((res) => setWords(res.data))
-      .catch((err) => console.error("無法取得單字", err));
+    api
+    .get("/api/words", { params: { level } })
+    .then((res) => setWords(res.data))
+    .catch((err) => console.error("無法取得單字", err));
 
-    axios
-      .get("http://localhost:5000/api/favorites", { withCredentials: true })
-      .then((res) => {
-        const ids = res.data.map((w) => w.id);
-        setFavoritedWordIds(new Set(ids));
-      })
-      .catch((err) => console.error("無法取得收藏", err));
-  }, [level]);
+    api.get("/api/favorites")
+    .then((res) => {
+      const ids = res.data.map((w) => w.id);
+      setFavoritedWordIds(new Set(ids));
+    })
+    .catch((err) => console.error("無法取得收藏",err));
+    }, [level]);
 
   const toggleFavorite = async (wordId) => {
     const updated = new Set(favoritedWordIds);
 
     if (updated.has(wordId)) {
       try {
-        await axios.delete(`http://localhost:5000/api/favorites/${wordId}`, {
-          withCredentials: true,
-        });
+        await api.delete(`/api/favorites/${wordId}`);
         updated.delete(wordId);
       } catch (err) {
         console.error("取消收藏失敗", err);
       }
     } else {
       try {
-        await axios.post(
-          "http://localhost:5000/api/favorites",
-          { word_id: wordId },
-          { withCredentials: true }
-        );
+        await api.post("/api/favorites",{word_id : wordId});
         updated.add(wordId);
       } catch (err) {
         console.error("加入收藏失敗", err);

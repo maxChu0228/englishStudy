@@ -1,4 +1,3 @@
-// src/components/LevelCard.jsx
 import { useNavigate } from "react-router-dom";
 
 function LevelCard({ title, description, level, locked, type = "quiz" }) {

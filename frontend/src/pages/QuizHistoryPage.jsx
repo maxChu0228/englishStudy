@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { Box, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 import Navbar from "../components/Navbar";
-import axios from "axios";
 import { Link } from "react-router-dom";
+import api from "../api";
 
 function QuizHistoryPage() {
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/quiz/history", { withCredentials: true })
+    api.get("/api/quiz/history")
       .then((res) => setHistory(res.data))
       .catch((err) => console.error("載入紀錄失敗：", err));
   }, []);

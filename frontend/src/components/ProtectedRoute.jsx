@@ -1,6 +1,6 @@
-// src/components/ProtectedRoute.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../api";
 
 function ProtectedRoute({ children }) {
   const [checking, setChecking] = useState(true);
@@ -8,9 +8,9 @@ function ProtectedRoute({ children }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/check-session", { credentials: "include" })
-      .then(res => res.json())
-      .then(data => {
+    api.get("/api/check-session")
+      .then(res => {
+        const data = res.data;
         if (data.loggedIn) {
           setAllowed(true);
         } else {

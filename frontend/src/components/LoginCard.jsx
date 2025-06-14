@@ -24,11 +24,9 @@ function LoginCard() {
       password: password
     })
     .then((res) => {
-      // 登入成功
       navigate('/dashboard');
     })
     .catch((err) => {
-      // 失敗時 axios 會拋錯，你可以印 err.response.status 驗證是哪裡出問題
       setError('❌ 帳號或密碼錯誤');
     });
   };
@@ -47,7 +45,6 @@ function LoginCard() {
         position: "relative",
       }}
     >
-      {/* 頂部 Logo + 註冊連結 */}
       <Box
         sx={{
           display: "flex",
@@ -75,7 +72,6 @@ function LoginCard() {
         </Typography>
       </Box>
 
-      {/* 輸入欄位 */}
       <TextField
         fullWidth
         placeholder="Username"
@@ -101,12 +97,10 @@ function LoginCard() {
         }}
       />
 
-      {/* 忘記密碼提示 */}
       <Typography variant="body2" color="text.secondary" sx={{ textAlign: "right" }}>
         Forgot password?
       </Typography>
 
-      {/* 登入按鈕 */}
       <Button
         variant="contained"
         fullWidth
@@ -124,7 +118,6 @@ function LoginCard() {
         SIGN IN
       </Button>
 
-      {/* 錯誤訊息 */}
       {error && (
         <Typography color="error" sx={{ mt: 1 }}>
           {error}

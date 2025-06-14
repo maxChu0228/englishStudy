@@ -7,19 +7,15 @@ function LearningStatsCard({ checkIns = [], setCheckIns }) {
   const [dailyGoals, setDailyGoals] = useState([]);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [tasksState, setTasksState] = useState({});
-  // ➊ 用來存後端回傳的「已完成目標的歷史日期字串陣列」
   const [completedDates, setCompletedDates] = useState([]);
 
-  // 1. 載入元件時，先撈「當天目標」與「歷史完成日期」
   useEffect(() => {
-    // 1a. 拿今天的目標清單
     api.get("/api/daily-goal").then((res) => {
       if (Array.isArray(res.data)) {
         setDailyGoals(res.data);
       }
     });
 
-    // 1b. 同時拿「過去已完成全部當日目標的日期」
     api.get("/api/daily-goal/history")
       .then((res) => {
         if (Array.isArray(res.data)) {
@@ -33,7 +29,6 @@ function LearningStatsCard({ checkIns = [], setCheckIns }) {
       });
   }, []);
 
-  // 2. 只要取到 dailyGoals，就立刻去撈「今天的進度」
   useEffect(() => {
     if (dailyGoals.length === 0) {
       setTasksState({});
@@ -59,7 +54,6 @@ function LearningStatsCard({ checkIns = [], setCheckIns }) {
       });
   }, [dailyGoals]);
 
-  // 3. 當 Modal 儲存完目標，呼叫此函式重新拉目標列表 & 歷史完成日期
   const handleSaveGoal = () => {
     api.get("/api/daily-goal")
       .then((res) => {

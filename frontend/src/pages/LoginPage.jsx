@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import LoginCard from "../components/LoginCard";
 import "../css/LoginPage.css";
-import api from "../api"; // ✅ 引入 axios 實例
+import api from "../api";
 
-// 🔤 動態產生背景英文字母
 const generateLetterRows = (rowCount = 3, lettersPerRow = 30) => {
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   return Array.from({ length: rowCount }).map((_, rowIndex) => {
@@ -58,15 +57,12 @@ function LoginPage() {
 
   return (
     <>
-      {/* 頂部導覽列 */}
       <div style={{ position: "relative", zIndex: 2 }}>
         <Navbar />
       </div>
 
-      {/* 背景英文字母動畫 */}
       <div className="letter-background">{letterRows}</div>
 
-      {/* 登入表單區塊 */}
       <div
         style={{
           height: "80vh",

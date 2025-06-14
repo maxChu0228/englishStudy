@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
 import Navbar from "../components/Navbar";
-import axios from "axios";
 import api from "../api";
 
 function HomePage() {

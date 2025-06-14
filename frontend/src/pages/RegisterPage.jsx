@@ -51,28 +51,23 @@ function RegisterPage() {
     setLetterRows(generateLetterRows());
   }, []);
 
-  const handleRegister = (e) => {
-    e.preventDefault();
-    setError("");
+  const handleRegister = async (e) => {
+      e.preventDefault();
+      setError("");
 
-    fetch("http://localhost:5000/register", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("註冊失敗");
-        return res.json();
-      })
-      .then(() => {
+      try {
+        await api.post(
+          "/register",
+          { username, password },
+          { withCredentials: true }
+        );
         alert("✅ 註冊成功！");
         navigate("/login");
-      })
-      .catch((err) => {
+      } catch (err) {
         setError("❌ 帳號已存在或格式錯誤");
-      });
-  };
+      }
+    };
+
 
   return (
     <>

@@ -9,7 +9,7 @@ function GamePage() {
   const location = useLocation();
   const level = new URLSearchParams(location.search).get("level") || "easy";
 
-  const [questions, setQuestions] = useState([]); // 一次拿全部題目
+  const [questions, setQuestions] = useState([]); 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [questionCount, setQuestionCount] = useState(1);
   const [selected, setSelected] = useState(null);
@@ -58,17 +58,15 @@ function GamePage() {
 
 const handleNext = async () => {
   if (questionCount >= 10) {
-    // 整理每一題的答題記錄（包含錯題與正確題）
     const answers = questions.map((q) => {
       const wrong = wrongAnswers.find(w => w.word === q.word);
       return {
         word: q.word,
         correct: q.answer,
-        chosen: wrong ? wrong.chosen : q.answer, // 錯的就用錯的，對的就記正確答案
+        chosen: wrong ? wrong.chosen : q.answer, 
       };
     });
 
-    // 發送 POST 請求到後端儲存測驗紀錄
      try {
         await api.post("/api/quiz/submit", {
           level,
@@ -80,7 +78,6 @@ const handleNext = async () => {
         console.error("測驗紀錄儲存失敗：", err);
       }
 
-    // 導向結果頁
     navigate("/game/result", {
       state: {
         score,

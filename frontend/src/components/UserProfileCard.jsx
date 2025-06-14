@@ -10,22 +10,18 @@ const LEVELS = [
   { name: "Lv. 5 - 單字王者",   threshold: 200 }
 ];
 
-// 取得目前等級的索引
 function getLevelIndex(completed) {
   const idx = LEVELS.findIndex(l => completed < l.threshold);
   return idx === -1 ? LEVELS.length - 1 : Math.max(0, idx - 1);
 }
 
-// 回傳等級名稱
 function getLevelName(completed) {
   return LEVELS[getLevelIndex(completed)].name;
 }
 
-// 取得升到下一級需要的累積次數
 function getNextThreshold(completed) {
   const idx = getLevelIndex(completed);
   if (idx === LEVELS.length - 1) {
-    // 已最高級
     return LEVELS[idx].threshold;
   }
   return LEVELS[idx + 1].threshold;
@@ -41,7 +37,6 @@ export default function UserProfileCard() {
   const [recentMistakes, setRecentMistakes] = useState([]);
   const [myRankData, setMyRankData] = useState(null);
 
-  // 從後端抓基本資料與統計
 useEffect(() => {
   api.get("/api/user").then(({ data }) => {
     setUsername(data.username);
@@ -65,12 +60,10 @@ useEffect(() => {
     .catch(console.error);
 }, []);
           
-  // 計算等級與進度
   const levelName = getLevelName(completed);
   const totalRequired = getNextThreshold(completed);
   const progressPercent = Math.min((completed / totalRequired) * 100, 100);
 
-  // 頭像上傳
   const handleAvatarClick = () => fileInputRef.current.click();
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
@@ -81,13 +74,12 @@ useEffect(() => {
     api.post("/api/upload-avatar", formData, {
       headers: { "Content-Type": "multipart/form-data" }
     }).then(res => {
-      setAvatar(`http://localhost:5000/static/avatars/${res.data.avatarPath}`);
+      setAvatar(`${api.defaults.baseURL}/static/avatars/${res.data.avatar}`);
     });
   };
 
   return (
     <div className="bg-white rounded-2xl shadow p-6 text-center w-full max-w-md mx-auto">
-      {/* 頭像 */}
       <div
         className="relative mx-auto w-32 h-32 border-2 border-gray-300 rounded-md overflow-hidden group cursor-pointer"
         onClick={handleAvatarClick}
@@ -111,7 +103,6 @@ useEffect(() => {
         />
       </div>
 
-      {/* 名稱與等級 */}
       <h2 className="text-xl font-bold mt-4">{username}</h2>
       <p className="text-base text-gray-500">
         排行榜名次：
@@ -121,7 +112,6 @@ useEffect(() => {
       </p>
       <p className="text-base text-blue-600 font-semibold mt-2">{levelName}</p>
 
-      {/* 進度條 */}
       <div className="mt-4 text-base text-gray-500">
         學習進度：{completed} / {totalRequired}
       </div>
@@ -132,13 +122,11 @@ useEffect(() => {
         />
       </div>
 
-      {/* 額外統計 */}
       <div className="mt-6 text-base space-y-2 text-left">
         <div>✔️ 測驗完成次數：{completed}</div>
         <div>🎯 正確率：{correctRate}%</div>
       </div>
 
-      {/* 最近錯誤 */}
       <div className="mt-6 text-left">
         <h3 className="text-base font-semibold text-red-600 mb-2">🧠 最近錯誤單字</h3>
         <ul className="text-base text-gray-700 list-disc list-inside space-y-1">

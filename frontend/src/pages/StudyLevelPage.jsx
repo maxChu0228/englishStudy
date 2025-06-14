@@ -11,7 +11,7 @@ function StudyLevelPage() {
 
   const [words, setWords] = useState([]);
   const [index, setIndex] = useState(0);
-  const [mode, setMode] = useState("card"); // card or list
+  const [mode, setMode] = useState("card"); 
   const [favoritedWordIds, setFavoritedWordIds] = useState(new Set());
 
   useEffect(() => {

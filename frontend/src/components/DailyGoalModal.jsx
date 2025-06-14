@@ -10,7 +10,6 @@ function DailyGoalModal({ onClose, onSave, dailyGoals = [] }) {
     const goal = { type, count };
     if (type === "accuracy") goal.accuracy = accuracy;
 
-    // 查找是否已有相同 type 的目標
     const existingGoal = dailyGoals.find(g => g.type === type);
 
     const endpoint = existingGoal

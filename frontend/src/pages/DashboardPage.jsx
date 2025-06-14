@@ -40,14 +40,12 @@ function DashboardPage() {
       <Navbar />
       <div className="bg-[#f5f6f8] min-h-screen w-full px-4 pt-6 pb-12">
         <div className="flex max-w-[1440px] mx-auto gap-4 justify-between items-stretch">
-          {/* 左側：個人資訊卡 */}
           <div className="w-[25%] min-h-[620px]">
             <div className="bg-white border border-blue-100 rounded-xl p-4 shadow-sm h-full">
               <UserProfileCard />
             </div>
           </div>
 
-          {/* 中間：日曆 + 測驗模式 */}
           <div className="w-[50%] flex flex-col gap-4 min-h-[620px]">
             <div className="bg-white border border-blue-100 rounded-xl p-6 shadow-sm w-full">
               <LearningStatsCard
@@ -87,7 +85,6 @@ function DashboardPage() {
             </div>
           </div>
 
-          {/* 右側：背單字模式（直式） */}
           <div className="w-[25%] min-h-[620px]">
             <div className="bg-white border border-blue-100 rounded-xl p-6 shadow-sm h-full">
               <h2 className="text-xl font-bold mb-4 text-green-700">📚 背單字模式</h2>

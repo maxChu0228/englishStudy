@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Box, Typography, Paper, Divider } from "@mui/material";
 import Navbar from "../components/Navbar";
-import api from "../api"; // ✅ 使用自定義 axios 實例
+import api from "../api"; 
 
 function QuizResultPage() {
   const { id } = useParams();
@@ -15,10 +15,8 @@ function QuizResultPage() {
   }, [id]);
 
   useEffect(() => {
-    // 進入頁面時：允許滾動
     document.body.style.overflow = "auto";
     return () => {
-      // 離開頁面時：恢復禁止滾動
       document.body.style.overflow = "hidden";
     };
   }, []);

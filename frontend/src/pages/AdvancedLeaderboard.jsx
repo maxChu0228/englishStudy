@@ -1,8 +1,7 @@
-// src/pages/AdvancedLeaderboard.jsx
 import { useEffect, useState } from "react";
 import api from "../api";
 import Navbar from "../components/Navbar";
-import LeaderboardIcon from "@mui/icons-material/EmojiEvents"; // 或其他獎盃圖示
+import LeaderboardIcon from "@mui/icons-material/EmojiEvents"; 
 import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 
@@ -34,15 +33,12 @@ export default function AdvancedLeaderboard({
       <Navbar />
 
       <div className="max-w-3xl mx-auto mt-8">
-        {/* 卡片容器 */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
-          {/* 標題 */}
           <div className="flex items-center mb-6">
             <LeaderboardIcon className="text-pink-600" fontSize="large" />
             <h1 className="ml-3 text-2xl font-semibold">排行榜</h1>
           </div>
 
-          {/* 表格 */}
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
@@ -75,7 +71,6 @@ export default function AdvancedLeaderboard({
             </table>
           </div>
 
-          {/* 分頁按鈕 */}
           <div className="flex justify-center items-center gap-4 mt-6">
             <button
               onClick={() => setPage((p) => Math.max(p - 1, 1))}

@@ -611,5 +611,87 @@ def get_my_leaderboard_rank():
 def root():
     return jsonify(message="伺服器運作中")
 
+def init_db(include_sample_data=True):
+    if not os.path.exists(DB_PATH):
+        print("[系統] 資料庫不存在，正在初始化 vocab.db...")
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # 建立資料表
+        cur.execute("""
+            CREATE TABLE users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                role TEXT NOT NULL,
+                avatar_path TEXT
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE words (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                word TEXT NOT NULL,
+                meaning TEXT NOT NULL,
+                level TEXT NOT NULL
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE quiz_records (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                level TEXT,
+                score INTEGER,
+                total_questions INTEGER,
+                created_at TEXT
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE quiz_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                record_id INTEGER,
+                word TEXT,
+                correct_answer TEXT,
+                chosen_answer TEXT,
+                is_correct INTEGER
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE favorites (
+                user_id INTEGER,
+                word_id INTEGER,
+                UNIQUE(user_id, word_id)
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE daily_goals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                type TEXT,
+                count INTEGER,
+                accuracy REAL,
+                created_at TEXT,
+                goal_date TEXT
+            )
+        """)
+
+        # 🔰 插入範例單字資料（可關閉）
+        if include_sample_data:
+            sample_words = [
+                ("apple", "蘋果", "easy"),
+                ("banana", "香蕉", "easy"),
+                ("computer", "電腦", "easy"),
+                ("architecture", "建築學", "medium"),
+                ("resilient", "有韌性的", "medium"),
+                ("perspective", "觀點", "medium"),
+                ("serendipity", "意外的收穫", "medium"),
+            ]
+            cur.executemany("INSERT INTO words (word, meaning, level) VALUES (?, ?, ?)", sample_words)
+            print(f"[系統] 已插入 {len(sample_words)} 筆範例單字。")
+
+        conn.commit()
+        conn.close()
+        print("[系統] 資料庫初始化完成。")
+
 if __name__=="__main__":
+    init_db()
     app.run(debug=True)

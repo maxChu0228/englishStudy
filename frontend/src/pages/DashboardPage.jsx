@@ -9,7 +9,6 @@ import LearningStatsCard from "../components/LearningStatsCard";
 function DashboardPage() {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
-
   const [checkIns, setCheckIns] = useState(["2025-05-28", "2025-05-29"]);
   const [tasks, setTasks] = useState({
     "2025-05-29": {
@@ -40,21 +39,21 @@ function DashboardPage() {
       <Navbar />
       <div className="bg-[#f5f6f8] min-h-screen w-full px-4 pt-6 pb-12">
         <div className="flex max-w-[1440px] mx-auto gap-4 justify-between items-stretch">
-          <div className="w-[25%] min-h-[620px]">
-            <div className="bg-white border border-blue-100 rounded-xl p-4 shadow-sm h-full">
+          <div className="w-[25%] flex flex-col">
+            <div className="bg-white border border-blue-100 rounded-xl p-4 shadow-sm flex-1">
               <UserProfileCard />
             </div>
           </div>
 
-          <div className="w-[50%] flex flex-col gap-4 min-h-[620px]">
-            <div className="bg-white border border-blue-100 rounded-xl p-6 shadow-sm w-full">
+          <div className="w-[50%] flex flex-col gap-4">
+            <div className="bg-white border border-blue-100 rounded-xl p-6 shadow-sm">
               <LearningStatsCard
                 checkIns={checkIns}
                 setCheckIns={setCheckIns}
                 tasks={tasks}
               />
             </div>
-            <div className="bg-white border border-blue-100 rounded-xl p-10 shadow-sm w-full">
+            <div className="bg-white border border-blue-100 rounded-xl p-6 shadow-sm flex-1 flex flex-col">
               <h2 className="text-xl font-bold mb-4 text-blue-700">📝 測驗模式</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <LevelCard
@@ -85,8 +84,8 @@ function DashboardPage() {
             </div>
           </div>
 
-          <div className="w-[25%] min-h-[620px]">
-            <div className="bg-white border border-blue-100 rounded-xl p-6 shadow-sm h-full">
+          <div className="w-[25%] flex flex-col">
+            <div className="bg-white border border-blue-100 rounded-xl p-6 shadow-sm flex-1">
               <h2 className="text-xl font-bold mb-4 text-green-700">📚 背單字模式</h2>
               <div className="flex flex-col gap-4">
                 <LevelCard

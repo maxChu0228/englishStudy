@@ -19,3 +19,4 @@ backend/.env.production
 backend/.env.development
 frontend/.env.development
 frontend/.env.development
+frontend/.env.development

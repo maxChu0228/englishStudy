@@ -1,46 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import LoginCard from "../components/LoginCard";
-import "../css/LoginPage.css";
 import api from "../api";
-
-const generateLetterRows = (rowCount = 3, lettersPerRow = 30) => {
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  return Array.from({ length: rowCount }).map((_, rowIndex) => {
-    const rowText = Array.from({ length: lettersPerRow })
-      .map(() => letters[Math.floor(Math.random() * letters.length)])
-      .join("");
-
-    const direction = rowIndex % 2 === 0 ? "normal" : "reverse";
-
-    return (
-      <div key={rowIndex} className="letter-scroll-wrapper">
-        <div
-          className="letter-scroll"
-          style={{
-            animationDuration: `${100 + Math.random() * 20}s`,
-            animationDirection: direction,
-            animationDelay: `${Math.random() * 5}s`,
-          }}
-        >
-          <span className="letter-row">{rowText + " " + rowText}</span>
-        </div>
-      </div>
-    );
-  });
-};
 
 function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [letterRows, setLetterRows] = useState([]);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    setLetterRows(generateLetterRows());
-  }, []);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -57,22 +25,19 @@ function LoginPage() {
 
   return (
     <>
-      <div style={{ position: "relative", zIndex: 2 }}>
+      <div className="relative z-20">
         <Navbar />
       </div>
 
-      <div className="letter-background">{letterRows}</div>
+      <div className="fixed inset-0 z-0">
+        <div
+          className="w-full h-full bg-cover bg-center"
+          style={{ backgroundImage: "url('/background.png')" }}
+        />
+        <div className="absolute inset-0 bg-white bg-opacity-50" />
+      </div>
 
-      <div
-        style={{
-          height: "80vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
+      <div className="h-[80vh] flex justify-center items-center relative z-10">
         <LoginCard
           username={username}
           password={password}

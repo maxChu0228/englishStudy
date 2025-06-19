@@ -7,18 +7,24 @@ import pytz
 from flask import Flask, jsonify, make_response, request, session
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+from dotenv import load_dotenv
+
+env = os.environ.get("FLASK_ENV", "development")
+env_file = f".env.{env}"
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__),env_file))
 
 app = Flask(__name__)
-app.secret_key = "my_english_game_123"
+app.secret_key = os.environ.get("SECRET_KEY","default_fallback_key")
 
 # ─── 全局設定 ─────────────────────────────────────────────────────────
 
-DB_PATH = "vocab.db"
+DB_PATH = os.environ.get("DB_PATH","vocab.db")
 TAIPEI = pytz.timezone("Asia/Taipei")
 LEVEL_MAP = {
     "easyQuiz": "easy",
     "advancedQuiz": "medium"
 }
+FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN","http://localhost:3000")
 UPLOAD_FOLDER = "static/avatars"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
@@ -52,7 +58,7 @@ def allowed_file(filename):
 
 # ─── 認證相關 ─────────────────────────────────────────────────────────
 
-CORS(app, supports_credentials=True, origins=["http://localhost:3000"])
+CORS(app, supports_credentials=True, origins=[FRONTEND_ORIGIN])
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -593,7 +599,6 @@ def get_my_leaderboard_rank():
             my_weighted     = round(row["weighted_score"], 1)
             break
 
-    # 5. 回傳結果
     if my_rank is None:
         return jsonify({"message": "尚未達成排行榜條件"}), 200
 

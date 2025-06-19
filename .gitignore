@@ -10,3 +10,12 @@ __pycache__/
 
 # VSCode 設定
 .vscode/
+
+backendend/.env.d*
+backendend/.env.p*
+frontend/.env.d*
+frontend/.env.p*
+backend/.env.production
+backend/.env.development
+frontend/.env.development
+frontend/.env.development

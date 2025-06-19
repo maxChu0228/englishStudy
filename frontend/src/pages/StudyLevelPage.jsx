@@ -23,8 +23,7 @@ function StudyLevelPage() {
   
 
   useEffect(() => {
-    api
-    .get("/api/words", { params: { level } })
+    api.get("/api/words", { params: { level } })
     .then((res) => setWords(res.data))
     .catch((err) => console.error("無法取得單字", err));
 
